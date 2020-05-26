@@ -46,8 +46,8 @@ class Posicion:
 
 TOK_PROGRAMA = 'Programa'
 TOK_CLASE_PRINCIPAL = 'ClasePrincipal'
-TT_IDENTIFIER	= 'IDENTIFIER'
-TT_KEYWORD		= 'KEYWORD'
+TT_IDENTIFIER	= 'Identificador'
+TT_KEYWORD		= 'reservada'
 TOK_ClAS_DEF = 'ClasDef'
 TOK_DECL_DEF = 'DeclVar'
 TOK_DECL_MET = 'DeclMet'
@@ -58,6 +58,8 @@ TOK_DECLARACION = 'Declaracion'
 TOK_EXPRESION    = 'Expresion'
 TOK_LISTA_EXP     = 'ListaExp'
 TOK_RESTO_EXP    = 'RestoExp'
+TOK_ENT = 'digitos'
+TOK_SUMA = 'operador : +'
 
 KEYWORDS = [
     'clase',
@@ -115,11 +117,11 @@ class analizadorLexico:
                 tokens.append(self.make_number())
             elif self.current_char in LETRAS:
                 tokens.append(self.make_identifier())
-            elif (self.current_char == 'c'):
-                tokens.append(Token(TOK_CLASE_PRINCIPAL))
+            elif (self.current_char == 'clase'):
+                tokens.append(Token(TT_KEYWORD))
                 self.avanzar()
-            elif self.current_char == '':
-                tokens.append(Token(TT_MINUS))
+            elif self.current_char == '+':
+                tokens.append(Token(TOK_SUMA))
                 self.avanzar()
             elif self.current_char == '*':
                 tokens.append(Token(TT_MUL))
@@ -132,6 +134,8 @@ class analizadorLexico:
                 self.avanzar()
             elif self.current_char == ')':
                 tokens.append(Token(TT_RPAREN))
+                self.avanzar()
+            elif self.current_char == '\n':
                 self.avanzar()
             else:
                 pos_start = self.pos.copiar()
@@ -163,7 +167,7 @@ class analizadorLexico:
         num_str = ''
         dot_count = 0
 
-        while self.current_char != None and self.current_char in DIGITS + '.':
+        while self.current_char != None and self.current_char in DIGITOS + '.':
             if self.current_char == '.':
                 if dot_count == 1: break
                 dot_count += 1
@@ -173,7 +177,7 @@ class analizadorLexico:
             self.avanzar()
 
         if dot_count == 0:
-            return Token(TT_INT, int(num_str))
+            return Token(TOK_ENT, int(num_str))
         else:
             return Token(TT_FLOAT, float(num_str))
 
