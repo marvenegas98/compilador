@@ -1,0 +1,1 @@
+[digitos : 1, operador : +, digitos : 2, reservada : clase][digitos : 5][Identificador : hola, digitos : 4]
