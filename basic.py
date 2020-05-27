@@ -2,7 +2,6 @@
 #Alejandro Centeno Chaves
 #Hilary González Abarca
 # CONSTANTES
-from strings_with_arrows import *
 
 import string
 import os
@@ -18,6 +17,17 @@ LETTERS_DIGITS = LETRAS + DIGITOS
 #######################################
 # POSICION
 #######################################
+
+class Error:
+    def __init__(self, pos_start, pos_end, error_name, details):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+        self.error_name = error_name
+        self.details = details
+    
+    def as_string(self):
+        result = 'La linea {} contiene un error, el lexema identificado con error es: {}.'.format(self.pos_start.linea + 1, self.details)
+        return result
 
 class Posicion:
     def __init__(self, indice, linea, col, fin, ftxt):
@@ -63,22 +73,9 @@ TOK_SUMA = 'operador : +'
 
 KEYWORDS = [
     'clase',
-    'AND',
-    'OR',
-    'NOT',
-    'IF',
-    'ELIF',
-    'ELSE',
-    'FOR',
-  'TO',
-  'STEP',
-  'WHILE',
-  'FUN',
-  'THEN',
-  'END',
-  'RETURN',
-  'CONTINUE',
-  'BREAK',
+    'si',
+    'mientras',
+    'entonces',
 ]
 
 class Token:
@@ -141,7 +138,9 @@ class analizadorLexico:
                 pos_start = self.pos.copiar()
                 char = self.current_char
                 self.avanzar()
-                return []
+                mensaje = Error(pos_start, self.pos, "Reporte de Error", "'" + char + "'")
+                return [], mensaje
+                
 
         return tokens, None
 
@@ -190,8 +189,3 @@ def run(fin, text):
     tokens, error = anlex.crear_tokens()
 
     return tokens, error
-    
-
-    
-    
-    
