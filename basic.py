@@ -10,6 +10,7 @@ import math
 DIGITOS = '0123456789'
 LETRAS = string.ascii_letters
 LETTERS_DIGITS = LETRAS + DIGITOS
+NUM_LINEA = 0
 
 #######################################
 
@@ -26,7 +27,7 @@ class Error:
         self.details = details
     
     def as_string(self):
-        result = 'La linea {} contiene un error, el lexema identificado con error es: {}.'.format(self.pos_start.linea + 1, self.details)
+        result = 'La linea {} contiene un error, el lexema identificado con error es: {}.'.format(NUM_LINEA, self.details)
         return result
 
 class Posicion:
@@ -67,11 +68,10 @@ TOK_TIPO = 'Tipo'
 TOK_DECLARACION = 'Declaracion'
 TOK_EXPRESION    = 'Expresion'
 TOK_LISTA_EXP     = 'ListaExp'
-TOK_RESTO_EXP    = 'RestoExp'
+TOK_ASIGNACION    = 'asignacion'
 TOK_ENT = 'digitos'
 TOK_COMENT = 'comentario'
 TOK_OPERADOR = 'operador'
-##TOK_operador = 'operador : +'
 
 reservadas = [
     'clase',
@@ -84,6 +84,15 @@ operadores = [
     '+',
     '*',
     '-',
+    '&&',
+    '||',
+    '==',
+    '!=',
+    '<',
+    '>',
+    '<=',
+    '>=',
+    '=',
 ]
 
 class Token:
@@ -147,33 +156,54 @@ class analizadorLexico:
 
 
     def crear_identificador(self):
-        id_str = ''
-        pos_start = self.pos.copiar()
-        while self.current_char != None and self.current_char in LETTERS_DIGITS + '_':
-            id_str += self.current_char
-            self.avanzar()
+        identi = ''
+        inicio = self.pos.copiar()
+        bandera = False
+        while bandera == False:
+            if(self.current_char != None and self.current_char in LETTERS_DIGITS + '_'):
+                identi += self.current_char
+                self.avanzar()
 
-        tok_type = TOK_RESERVADA if id_str in reservadas else TOK_IDENTIFICADOR
-        return Token(tok_type, id_str, pos_start, self.pos)
+            else:
+                bandera = True
+                self.avanzar()
+
+        tok_type = TOK_RESERVADA if identi in reservadas else TOK_IDENTIFICADOR
+        return Token(tok_type, identi, inicio, self.pos)
     
     
     def crear_numero(self):
+        inicio = self.pos
         num_str = ''
         dot_count = 0
+        bandera = False
 
-        while self.current_char != None and self.current_char in DIGITOS + '.':
-            if self.current_char == '.':
-                if dot_count == 1: break
-                dot_count += 1
-                num_str += '.'
+        while bandera == False:
+            if(self.current_char != None and self.current_char in LETTERS_DIGITS + '.'):
+                if self.current_char == '.':
+                    if dot_count == 1: break
+                    dot_count += 1
+                    num_str += '.'
+
+                elif self.current_char in LETRAS:
+                    num_str += self.current_char
+                
+                else:
+                    num_str += self.current_char
+                self.avanzar()
+
             else:
-                num_str += self.current_char
-            self.avanzar()
+                bandera = True
+                self.avanzar()
 
-        if dot_count == 0:
-            return Token(TOK_ENT, int(num_str))
-        else:
-            return Token(TT_FLOAT, float(num_str))
+        try:
+            if dot_count == 0:
+                return Token(TOK_ENT, int(num_str))
+            else:
+                return Token(TT_FLOAT, float(num_str))
+        except ValueError:
+            mensaje = Error(inicio, self.pos, "Reporte de Error", "'" + num_str + "'")
+            return mensaje
 
     def crear_comentario(self):
 
@@ -201,14 +231,16 @@ class analizadorLexico:
         else:
 
             return Token(TOK_OPERADOR, comentario)
-            
+
             
 
 #######################################
 # RUN
 #######################################
 
-def run(fin, text):
+def run(fin, text, linea):
+    global NUM_LINEA
+    NUM_LINEA = linea
     anlex = analizadorLexico(fin, text)
     tokens, error = anlex.crear_tokens()
 

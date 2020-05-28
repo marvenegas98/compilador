@@ -1,1 +1,1 @@
-[digitos : 1, operador : /, digitos : 2, reservada : clase][digitos : 5][Identificador : hola, digitos : 4][comentario : /* Hola mundo */][digitos : 2, operador : +, digitos : 2]
+[digitos : 1, operador : /, digitos : 2, reservada : clase][digitos : 52][Identificador : hola4][comentario : /* Hola mundo */][digitos : 2, operador : +, digitos : 2][digitos : 4, operador : <, digitos : 2][]
