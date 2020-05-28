@@ -56,8 +56,8 @@ class Posicion:
 
 TOK_PROGRAMA = 'Programa'
 TOK_CLASE_PRINCIPAL = 'ClasePrincipal'
-TT_IDENTIFIER	= 'Identificador'
-TT_KEYWORD		= 'reservada'
+TOK_IDENTIFICADOR	= 'Identificador'
+TOK_RESERVADA		= 'reservada'
 TOK_ClAS_DEF = 'ClasDef'
 TOK_DECL_DEF = 'DeclVar'
 TOK_DECL_MET = 'DeclMet'
@@ -69,13 +69,21 @@ TOK_EXPRESION    = 'Expresion'
 TOK_LISTA_EXP     = 'ListaExp'
 TOK_RESTO_EXP    = 'RestoExp'
 TOK_ENT = 'digitos'
-TOK_SUMA = 'operador : +'
+TOK_COMENT = 'comentario'
+TOK_OPERADOR = 'operador'
+##TOK_operador = 'operador : +'
 
-KEYWORDS = [
+reservadas = [
     'clase',
     'si',
     'mientras',
     'entonces',
+]
+
+operadores = [
+    '+',
+    '*',
+    '-',
 ]
 
 class Token:
@@ -111,26 +119,17 @@ class analizadorLexico:
             if self.current_char in ' \t':
                 self.avanzar()
             elif self.current_char in DIGITOS:
-                tokens.append(self.make_number())
+                tokens.append(self.crear_numero())
             elif self.current_char in LETRAS:
-                tokens.append(self.make_identifier())
-            elif (self.current_char == 'clase'):
-                tokens.append(Token(TT_KEYWORD))
-                self.avanzar()
-            elif self.current_char == '+':
-                tokens.append(Token(TOK_SUMA))
-                self.avanzar()
-            elif self.current_char == '*':
-                tokens.append(Token(TT_MUL))
+                tokens.append(self.crear_identificador())
+            elif self.current_char in operadores:
+                tokens.append(Token(TOK_OPERADOR, self.current_char))
                 self.avanzar()
             elif self.current_char == '/':
-                tokens.append(Token(TT_DIV))
-                self.avanzar()
-            elif self.current_char == '(':
-                tokens.append(Token(TT_LPAREN))
+                tokens.append(self.crear_comentario())
                 self.avanzar()
             elif self.current_char == ')':
-                tokens.append(Token(TT_RPAREN))
+                tokens.append(self.crear_comentario)
                 self.avanzar()
             elif self.current_char == '\n':
                 self.avanzar()
@@ -147,22 +146,18 @@ class analizadorLexico:
 
 
 
-    def make_identifier(self):
+    def crear_identificador(self):
         id_str = ''
         pos_start = self.pos.copiar()
         while self.current_char != None and self.current_char in LETTERS_DIGITS + '_':
             id_str += self.current_char
             self.avanzar()
 
-        tok_type = TT_KEYWORD if id_str in KEYWORDS else TT_IDENTIFIER
+        tok_type = TOK_RESERVADA if id_str in reservadas else TOK_IDENTIFICADOR
         return Token(tok_type, id_str, pos_start, self.pos)
     
     
-    
-    
-    
-    
-    def make_number(self):
+    def crear_numero(self):
         num_str = ''
         dot_count = 0
 
@@ -179,6 +174,35 @@ class analizadorLexico:
             return Token(TOK_ENT, int(num_str))
         else:
             return Token(TT_FLOAT, float(num_str))
+
+    def crear_comentario(self):
+
+        comentario = self.current_char
+        bandera = False
+        comentario_final = ''
+        posInicio = self.pos.copiar()
+        self.avanzar()
+
+        if self.current_char == '*':
+
+            while bandera == False:
+                if(comentario_final == '*') and (self.current_char == '/'):
+                    comentario += self.current_char
+                    self.avanzar()
+                    bandera = True
+
+                else:
+                    comentario_final = self.current_char
+                    comentario += self.current_char
+                    self.avanzar()
+
+            return Token(TOK_COMENT, comentario)
+
+        else:
+
+            return Token(TOK_OPERADOR, comentario)
+            
+            
 
 #######################################
 # RUN

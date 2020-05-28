@@ -1,3 +1,5 @@
-1 + 2 clase
+1 / 2 clase
 5
 hola 4
+/* Hola mundo */
+2 + 2

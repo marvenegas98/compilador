@@ -10,7 +10,7 @@ for line in lines:
     	if error: print(error.as_string())
     	else:
     		print(result)
-    		w.write(str(result))
+    		file2.write(str(result))
     
 file1.close()
 file2.close()
