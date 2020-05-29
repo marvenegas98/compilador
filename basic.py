@@ -102,7 +102,7 @@ class Token:
         self.valor = valor
     
     def __repr__(self):
-        if self.valor: return ('{} : {}'.format(self.tipo, self.valor))
+        if self.valor: return ('{} , {}'.format(self.tipo, self.valor))
         return '{}'.format(self.tipo)
 
 #######################################
