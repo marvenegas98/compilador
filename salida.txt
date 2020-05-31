@@ -1,6 +1,30 @@
-<digitos , 1>   <operador , />   <digitos , 2>   <reservada , clase>   
-<digitos , 52>   
-<Identificador , hola4>   
-<comentario , /* Hola mundo */>   
-<digitos , 2>   <operador , +>   <digitos , 2>   
-<digitos , 4>   <operador , <>   <digitos , 2>   
+
+<ClasDef , clase>   <reservada , clase>   <Identificador , Factorial>   <corcheteizq , {>   
+
+<reservada , publico>   <reservada , estatico>   <Tipo , vacio>   <Identificador , vacio>   <ClasePrincipal , principal>   <Identificador , principal>   <parentizq , (>   <Tipo , Cadena[]>   <Identificador , Cadena[]>   <Identificador , a>   <parentder , )>   <corcheteizq , {>   
+
+<reservada , imprimir>   <parentizq , (>   <Expresion , nuevo>   <reservada , nuevo>   <Identificador , Fac>   <parentizq , (>   <parentder , )>   <Identificador , HacerFac>   <parentizq , (>   <digitos , 10>   <parentder , )>   
+
+<corcheteder , }>   
+
+<corcheteder , }>   
+
+<ClasDef , clase>   <reservada , clase>   <Identificador , Fac>   <corcheteizq , {>   
+
+<reservada , publico>   <Tipo , ent>   <reservada , ent>   <Identificador , HacerFac>   <parentizq , (>   <Tipo , ent>   <reservada , ent>   <Identificador , num>   <parentder , )>   <corcheteizq , {>   
+
+<Tipo , ent>   <reservada , ent>   <Identificador , num_aux>   
+
+<reservada , si>   <parentizq , (>   <Identificador , num>   <operador , <>   <digitos , 1>   
+
+<Identificador , num_aux>   <operador , =>   <digitos , 1>   
+
+<reservada , entonces>   
+
+<Identificador , num_aux>   <operador , =>   <Identificador , num>   <operador , *>   <parentizq , (>   <Expresion , esto>   <reservada , esto>   <Identificador , HacerFac>   <parentizq , (>   <Identificador , num>   <operador , ->   <digitos , 1>   <parentder , )>   
+
+<reservada , retornar>   <Identificador , num_aux>   
+
+<corcheteder , }>   
+
+<corcheteder , }>   
