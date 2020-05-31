@@ -84,7 +84,8 @@ TOK_DECLARACION = 'Declaracion'
 TOK_EXPRESION    = 'Expresion'
 TOK_LISTA_EXP     = 'ListaExp'
 TOK_ASIGNACION    = 'asignacion'
-TOK_ENT = 'digitos'
+TOK_ENT = 'entero'
+TOK_FLOTANTE = 'flotante'
 TOK_COMENT = 'comentario'
 TOK_OPERADOR = 'operador'
 TOK_PARENIZQ = 'parentizq'
@@ -126,8 +127,8 @@ operadores = [
     '+',
     '*',
     '-',
-    '&&',
-    '||',
+    '&',
+    '|',
     '==',
     '!=',
     '<',
@@ -238,14 +239,11 @@ class analizadorLexico:
         bandera = False
         tok_type = ''
         while bandera == False:
-            print(self.current_char)
             if(self.current_char != None and self.current_char in LETRAS_DIGITOS + '_') or (self.current_char == '[') or (self.current_char == ']'):
                 identi += self.current_char
                 self.avanzar()
 
             else:
-                print("llegue")
-                print(identi)
                 bandera = True
 
         if identi == 'principal':

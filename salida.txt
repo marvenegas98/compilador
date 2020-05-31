@@ -1,0 +1,20 @@
+
+<entero , 1>   <operador , />   <entero , 2>   
+
+<entero , 52>   
+
+<Identificador , hola4>   
+
+<comentario , /* Hola mundo */>   
+
+<entero , 2>   <operador , +>   <entero , 2>   
+
+<entero , 4>   <operador , <=>   <entero , 2>   
+
+<Identificador , hola>   <asignacion , =>   <entero , 5>   
+
+<flotante , 5.2>   
+
+<reservada , si>   <reservada , entonces>   <Expresion , verdadero>   <reservada , verdadero>   
+
+<entero , 3>   <operador , &&>   

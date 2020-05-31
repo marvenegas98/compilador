@@ -1,0 +1,10 @@
+1 / 2
+52
+hola4
+/* Hola mundo */
+2 + 2
+4 <= 2
+hola = 5
+5.2
+si entonces verdadero
+3 && 
