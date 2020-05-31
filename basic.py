@@ -103,21 +103,24 @@ reservadas = [
     'clase',
     'mientras',
     'entonces',
-]
-
-tipo = [
-    'bool',
-    'ent',
-    'ent []',
-    ]
-
-expresion = [
-    'largo',
-    'Verdadero',
-    'Falso',
+    'imprimir',  'verdadero',
+    'falso',
     'esto',
-    'nuevo',
-    ]
+    'nuevo','ent',
+    'cadena',
+    'flotante', 'publico','privado',
+    'doble',
+    'booleano','car','extiende', 'para','intentar',
+    'finalmente', 'excepto','hacer','continuar','interrumpir','implementa','paquete','retornar','largo','estatico','lanza'
+]
+clasdecls = [
+    'clase',
+    'extiende']
+exp = [    
+    'verdadero',
+    'falso',
+    'esto',
+    'nuevo']
 
 operadores = [
     '+',
@@ -134,6 +137,7 @@ operadores = [
     '=',
 ]
 ignorar = [';','.',':']
+
 
 #############################################
 # La clase token se encarga de crear la tupla
@@ -194,14 +198,11 @@ class analizadorLexico:
             elif self.current_char == '/':
                 tokens.append(self.crear_comentario())
                 self.avanzar()
+            elif self.current_char == '(':
+                tokens.append(Token(TOK_PARENIZQ,self.current_char))
+                self.avanzar()
             elif self.current_char == ')':
-                tokens.append(self.crear_comentario)
-                self.avanzar()
-            elif self.current_char == '{':
-                tokens.append('')
-                self.avanzar()
-            elif self.current_char == '}':
-                tokens.append('')
+                tokens.append(Token(TOK_PARENDER,self.current_char))
                 self.avanzar()
             elif self.current_char == '\n':
                 self.avanzar()
@@ -225,17 +226,20 @@ class analizadorLexico:
 
 
 
+
     ########################################################################
     # un tipo, una expresión o un identificador.
     # solo caracter. Adicionalmente valida si se trata de una declaración,
     # Esta función se encarga de contruir palabras a partir de un
     ########################################################################
+    def crear_identificador(self,tokens):
         identi = ''
         inicio = self.pos.copiar()
         bandera = False
+        tok_type = ''
         while bandera == False:
             print(self.current_char)
-            if(self.current_char != None and self.current_char in LETTERS_DIGITS + '_') or (self.current_char == '[') or (self.current_char == ']'):
+            if(self.current_char != None and self.current_char in LETRAS_DIGITOS + '_') or (self.current_char == '[') or (self.current_char == ']'):
                 identi += self.current_char
                 self.avanzar()
 
