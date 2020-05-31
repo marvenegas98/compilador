@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 <ClasDef , clase>   <reservada , clase>   <Identificador , Factorial>   <corcheteizq , {>   
 
@@ -28,3 +29,14 @@
 <corcheteder , }>   
 
 <corcheteder , }>   
+=======
+<digitos , 1>   <operador , />   <digitos , 2>   
+<digitos , 52>   
+<Identificador , hola4>   
+<comentario , /* Hola mundo */>   
+<digitos , 2>   <operador , +>   <digitos , 2>   
+<digitos , 4>   <operador , <=>   <digitos , 2>   
+<Identificador , hola>   <asignacion , =>   <digitos , 5>   
+<flotante , 5.2>   
+<Identificador , if>   <Identificador , else>   <Expresion , Verdadero>   
+>>>>>>> master

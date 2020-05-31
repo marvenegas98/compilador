@@ -7,28 +7,38 @@ import string
 import os
 import math
 
+# Conjuntos de valores numericos y caracteres.
+# Serán utilizados para la generación de tokens.
+
 DIGITOS = '0123456789'
 LETRAS = string.ascii_letters
-LETTERS_DIGITS = LETRAS + DIGITOS
-NUM_LINEA = 0
+LETRAS_DIGITOS = LETRAS + DIGITOS
+NUM_LINEA = 0 # Linea de código en lectura.
+
+
 
 #######################################
-
-
-#######################################
-# POSICION
+# Clase encargada del manejo de errores.
+# Solamente es capaz de identificar la linea
+# y el token que posee el fallo.
 #######################################
 
 class Error:
-    def __init__(self, pos_start, pos_end, error_name, details):
-        self.pos_start = pos_start
-        self.pos_end = pos_end
-        self.error_name = error_name
-        self.details = details
+    def __init__(self, pos_inicio, pos_fin, error_nombre, detalles):
+        self.pos_inicio = pos_inicio
+        self.pos_fin = pos_fin
+        self.error_nombre = error_nombre
+        self.detalles = detalles
     
     def as_string(self):
-        result = 'La linea {} contiene un error, el lexema identificado con error es: {}.'.format(NUM_LINEA, self.details)
-        return result
+        resultado = 'La linea {} contiene un error, el lexema identificado con error es: {}.'.format(NUM_LINEA, self.detalles)
+        return resultado
+
+#######################################
+# La clase Posición se encarga de llevar
+# el control del avance de la lectura de
+# la linea.
+#######################################
 
 class Posicion:
     def __init__(self, indice, linea, col, fin, ftxt):
@@ -52,7 +62,12 @@ class Posicion:
         return Posicion(self.indice, self.linea, self.col, self.fin, self.ftxt)
 
 #######################################
-# TOKENS
+# Aquí se definen los tokens y las listas
+# de elementos esperadas para cada una de
+# ellas.
+#
+# Esto está basado en el recuadro de
+# analisis sintactico traducido.
 #######################################
 
 TOK_PROGRAMA = 'Programa'
@@ -88,24 +103,21 @@ reservadas = [
     'clase',
     'mientras',
     'entonces',
-    'imprimir',  'verdadero',
-    'falso',
-    'esto',
-    'nuevo','ent',
-    'cadena',
-    'flotante', 'publico','privado',
-    'doble',
-    'booleano','car','extiende', 'para','intentar',
-    'finalmente', 'excepto','hacer','continuar','interrumpir','implementa','paquete','retornar','largo','estatico','lanza'
 ]
-clasdecls = [
-    'clase',
-    'extiende']
-exp = [    
-    'verdadero',
-    'falso',
+
+tipo = [
+    'bool',
+    'ent',
+    'ent []',
+    ]
+
+expresion = [
+    'largo',
+    'Verdadero',
+    'Falso',
     'esto',
-    'nuevo']
+    'nuevo',
+    ]
 
 operadores = [
     '+',
@@ -123,6 +135,12 @@ operadores = [
 ]
 ignorar = [';','.',':']
 
+#############################################
+# La clase token se encarga de crear la tupla
+# con el token identificado y su respectivo
+# identificador.
+#############################################
+
 class Token:
     # Edite la variable tipo y valor, si no funcionan entonces hay que devolverlo a type y value xD
     def __init__(self, tipo_, valor=None, pos_start=None, pos_end=None):
@@ -134,7 +152,11 @@ class Token:
         return '{}'.format(self.tipo)
 
 #######################################
-# ANALIZADOR LEXICO
+# La clase de analisis sintactico es la
+# que explicitamente se encarga de clasificar
+# cada elemento entrante de la linea en alguna
+# de las funciones encargadas de realizar
+# el análisis de los valores.
 #######################################
 
 class analizadorLexico:
@@ -152,6 +174,10 @@ class analizadorLexico:
     def crear_tokens(self):
         tokens = []
 
+        # Aquí se toma un caracter de la linea, y dependiendo de su valor, es enviado a la
+        # función encargada de continuar con el análisis de la palabra.
+        # *Un valor no reconocido será tomado como error*
+        
         while self.current_char != None:
             if self.current_char in ' \t':
                 self.avanzar()
@@ -163,16 +189,19 @@ class analizadorLexico:
                 tokens = self.crear_identificador(tokens)
                 print(tokens)
             elif self.current_char in operadores:
-                tokens.append(Token(TOK_OPERADOR, self.current_char))
+                tokens.append(self.crear_operador())
                 self.avanzar()
             elif self.current_char == '/':
                 tokens.append(self.crear_comentario())
                 self.avanzar()
-            elif self.current_char == '(':
-                tokens.append(Token(TOK_PARENIZQ,self.current_char))
-                self.avanzar()
             elif self.current_char == ')':
-                tokens.append(Token(TOK_PARENDER,self.current_char))
+                tokens.append(self.crear_comentario)
+                self.avanzar()
+            elif self.current_char == '{':
+                tokens.append('')
+                self.avanzar()
+            elif self.current_char == '}':
+                tokens.append('')
                 self.avanzar()
             elif self.current_char == '\n':
                 self.avanzar()
@@ -196,8 +225,11 @@ class analizadorLexico:
 
 
 
-
-    def crear_identificador(self,tokens):
+    ########################################################################
+    # un tipo, una expresión o un identificador.
+    # solo caracter. Adicionalmente valida si se trata de una declaración,
+    # Esta función se encarga de contruir palabras a partir de un
+    ########################################################################
         identi = ''
         inicio = self.pos.copiar()
         bandera = False
@@ -235,6 +267,12 @@ class analizadorLexico:
             tokens.append(Token(tok_type, identi, inicio, self.pos))
         return tokens
     
+
+    ##########################################################################
+    # Esta función se encarga de crear números, enteros o flotantes, a partir de
+    # un valor númerico. Palabras que inicien por valores númericos en combinación
+    # de letras serán tomadas como error.
+    #############################################################################
     
     def crear_numero(self):
         inicio = self.pos
@@ -243,7 +281,7 @@ class analizadorLexico:
         bandera = False
 
         while bandera == False:
-            if(self.current_char != None and self.current_char in LETTERS_DIGITS + '.'):
+            if(self.current_char != None and self.current_char in LETRAS_DIGITOS + '.'):
                 if self.current_char == '.':
                     if dot_count == 1: break
                     dot_count += 1
@@ -258,17 +296,23 @@ class analizadorLexico:
 
             else:
                 bandera = True
-                self.avanzar()
 
         try:
             if dot_count == 0:
                 return Token(TOK_ENT, int(num_str))
             else:
-                return Token(TT_FLOAT, float(num_str))
+                return Token(TOK_FLOTANTE, float(num_str))
         except ValueError:
             mensaje = Error(inicio, self.pos, "Reporte de Error", "'" + num_str + "'")
-            return mensaje
+            return mensaje.as_string()
 
+
+    #########################################################################
+    # Esta función se encarga de contruir comentarios. Inicia con el caracter
+    # '/', si este es seguido por '*' se empezará a crear un comentario; caso
+    # contrario el valor se tomará como un operador.
+    ##########################################################################
+    
     def crear_comentario(self):
 
         comentario = self.current_char
@@ -296,11 +340,37 @@ class analizadorLexico:
 
             return Token(TOK_OPERADOR, comentario)
 
+
+    
+    ##################################################################################
+    # Esta función lleva a cabo el reconocimiento de operadores, además de contruir
+    # aquellos formados por dos caracteres, tales como '<=', '==' o '&&'.
+    # *Un signo de igual (=) solo, será definido como operador de asiganción*
+    ##################################################################################
+    def crear_operador(self):
+        inicio = self.current_char
+        operador = ''
+        bandera = False
+
+        while bandera == False:
+            if(self.current_char != None and self.current_char in operadores):
+
+                operador += self.current_char
+                self.avanzar()
+
+            else:
+                bandera = True
+
+        if operador == '=':
+            return Token(TOK_ASIGNACION, operador)
+        else:
+            return Token(TOK_OPERADOR, operador)
+
             
 
-#######################################
-# RUN
-#######################################
+###########################################
+# Función que inicia el flujo del programa
+###########################################
 
 def run(fin, text, linea):
     global NUM_LINEA
