@@ -1,4 +1,4 @@
-Este proyecto es desarrollado por los estudiantes Mara Venegas, Hilary González y Alejandro Centeno como parte del curso de Compiladores e Intérpretes del Instituto Tecnológico de Costa Rica.
+Este proyecto es desarrollado por los estudiantes María Venegas, Hilary González y Alejandro Centeno como parte del curso de Compiladores e Intérpretes del Instituto Tecnológico de Costa Rica.
 
 Este proyecto consiste en implementar un analizador léxico sobre un subconjunto del lenguaje Java pero en idioma español, es decir, se intentará generar un lenguaje java tropicalizado.
 
