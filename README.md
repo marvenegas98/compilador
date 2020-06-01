@@ -6,7 +6,7 @@ El lenguaje fuente sobre el que se construye el analizador es Python.
 
 Para ejecutar este proyecto, se debe hacer de la siguiente manera: 
 
-analizadorLexico prueba1.txt nombreArchivoSalida.txt
+python3 analizadorLexico.py prueba1.txt nombreArchivoSalida.txt
 
 
 El output se muestra de la siguiente manera: 

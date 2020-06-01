@@ -85,7 +85,6 @@ TOK_EXPRESION    = 'Expresion'
 TOK_LISTA_EXP     = 'ListaExp'
 TOK_ASIGNACION    = 'asignacion'
 TOK_ENT = 'entero'
-TOK_FLOTANTE = 'flotante'
 TOK_COMENT = 'comentario'
 TOK_OPERADOR = 'operador'
 TOK_PARENIZQ = 'parentizq'
@@ -93,35 +92,38 @@ TOK_PARENDER= 'parentder'
 TOK_CORIZQ = 'corcheteizq'
 TOK_CORDER= 'corcheteder'
 
-tipos = ['ent','ent[]','Cadena[]','car[]','flotante[]',
-    'Cadena',
-    'flotante',
-    'doble',
-    'booleano','largo','car','vacio']
+tipos = ['ent','ent[]','Cadena[]',
+    'bool','largo','vacio']
 
 reservadas = [
     'si',
     'clase',
     'mientras',
     'entonces',
-    'imprimir',  'verdadero',
-    'falso',
+    'imprimir',
+    'Verdadero',
+    'Falso',
     'esto',
-    'nuevo','ent',
-    'cadena',
-    'flotante', 'publico','privado',
-    'doble',
-    'booleano','car','extiende', 'para','intentar',
-    'finalmente', 'excepto','hacer','continuar','interrumpir','implementa','paquete','retornar','largo','estatico','lanza'
+    'nuevo',
+    'ent',
+    'publico',
+    'bool',
+    'extiende',
+    'retornar',
+    'largo',
+    'estatico',
+    'principal',
+    'Cadena'
 ]
 clasdecls = [
     'clase',
     'extiende']
 exp = [    
-    'verdadero',
-    'falso',
+    'Verdadero',
+    'Falso',
     'esto',
-    'nuevo']
+    'nuevo',
+    '!']
 
 operadores = [
     '+',
@@ -302,8 +304,7 @@ class analizadorLexico:
         try:
             if dot_count == 0:
                 return Token(TOK_ENT, int(num_str))
-            else:
-                return Token(TOK_FLOTANTE, float(num_str))
+
         except ValueError:
             mensaje = Error(inicio, self.pos, "Reporte de Error", "'" + num_str + "'")
             return mensaje.as_string()
