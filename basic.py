@@ -92,7 +92,7 @@ TOK_PARENDER= 'parentder'
 TOK_CORIZQ = 'corcheteizq'
 TOK_CORDER= 'corcheteder'
 
-tipos = ['ent','ent[]','Cadena[]',
+tipos = ['ent','ent[]','Cadena[]','Cadena',
     'bool','largo','vacio']
 
 reservadas = [
@@ -127,6 +127,7 @@ exp = [
 
 operadores = [
     '+',
+    '/',
     '*',
     '-',
     '&',
@@ -136,8 +137,8 @@ operadores = [
     '<',
     '>',
     '<=',
-    '>=',
-    '=',
+    '>=', 
+    '='
 ]
 ignorar = [';','.',':']
 
@@ -194,7 +195,6 @@ class analizadorLexico:
                 tokens.append(self.crear_numero())
             elif self.current_char in LETRAS:
                 tokens = self.crear_identificador(tokens)
-                print(tokens)
             elif self.current_char in operadores:
                 tokens.append(self.crear_operador())
                 self.avanzar()

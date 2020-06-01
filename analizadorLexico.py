@@ -10,7 +10,6 @@ for line in lines:
         result, error = basic.run('<stdin>', line, num_linea)
         num_linea += 1
     if error: 
-        #print(result)
         for i in range(0,len(result)):
             file2.write('<'+str(result[i])+'>')
             file2.write("   ")
@@ -18,7 +17,6 @@ for line in lines:
         exit()
 
     file2.write('\n')
-    #print(result)
     for i in range(0,len(result)):
         file2.write('<'+str(result[i])+'>')
         file2.write("   ")

@@ -5,7 +5,7 @@
 
 <Identificador , hola4>   
 
-<comentario , /* Hola mundo */>   
+<operador , /*>   <Identificador , Hola>   <Identificador , mundo>   <operador , */>   
 
 <entero , 2>   <operador , +>   <entero , 2>   
 
@@ -15,6 +15,6 @@
 
 <None>   
 
-<reservada , si>   <reservada , entonces>   <Expresion , verdadero>   <reservada , verdadero>   
+<reservada , si>   <reservada , entonces>   <Identificador , verdadero>   
 
 <entero , 3>   <operador , &&>   
