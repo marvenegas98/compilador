@@ -91,6 +91,7 @@ TOK_PARENIZQ = 'parentizq'
 TOK_PARENDER= 'parentder'
 TOK_CORIZQ = 'corcheteizq'
 TOK_CORDER= 'corcheteder'
+TOK_CADENA = 'cadena'
 
 tipos = ['ent','ent[]','Cadena[]','Cadena',
     'bool','largo','vacio']
@@ -200,6 +201,9 @@ class analizadorLexico:
                 self.avanzar()
             elif self.current_char == '/':
                 tokens.append(self.crear_comentario())
+                self.avanzar()
+            elif self.current_char == '"':
+                tokens.append(self.crear_cadena())
                 self.avanzar()
             elif self.current_char == '(':
                 tokens.append(Token(TOK_PARENIZQ,self.current_char))
@@ -342,6 +346,23 @@ class analizadorLexico:
         else:
 
             return Token(TOK_OPERADOR, comentario)
+
+
+    #########################################################################
+    # Esta función se encarga de contruir cadenas. Inicia con el caracter
+    # '"'.
+    ##########################################################################
+    def crear_cadena(self):
+
+        cadena = self.current_char
+        self.avanzar()
+
+        while self.current_char != '"':
+            cadena += self.current_char
+            self.avanzar()
+
+
+        return Token(TOK_CADENA, cadena)
 
 
     

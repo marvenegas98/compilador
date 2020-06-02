@@ -1,10 +1,16 @@
-1 / 2
-52
-hola4
-/* Hola mundo */
-2 + 2
-4 <= 2
-hola = 5
-5.2
-si entonces verdadero
-3 && 
+ent fibonacci(ent n)
+{
+    si (n>1){
+       retornar fibonacci(n-1) + fibonacci(n-2);
+    }
+    sino (n==1) {  // caso base
+        retornar 1;
+    }
+    sino (n==0){ 
+        retornar 0;
+    }
+    entonces { 
+        Imprimir ("Debes ingresar un tamaño mayor o igual a 1");
+        retornar -1; 
+    }
+}
