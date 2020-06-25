@@ -23,18 +23,19 @@ NUM_LINEA = 0 # Linea de código en lectura.
 class Numero:
     def __init__(self, tok):
         self.tok = tok
-
+        self.pos_start = self.tok.pos_start
+        self.pos_end = self.tok.pos_end
     def __repr__(self):
-        return f'{self.tok}'
+        return self.tok
 
 class OpBinaria:
     def __init__(self, nodo_izq, op, nodo_der):
         self.nodo_izq = nodo_izq
-        self.op = ope
+        self.op = op
         self.nodo_der = nodo_der
 
     def __repr__(self):
-        return f'({self.nodo_izq}, {self.op}, {self.nodo_der})'
+        return self.nodo_izq, self.op, self.nodo_der
 
 class OpUn:
     def __init__(self, op, nodo):
@@ -42,8 +43,7 @@ class OpUn:
         self.nodo = nodo
 
     def __repr__(self):
-        return f'({self.op}, {self.nodo})'
-
+        return self.op, self.nodo
 #######################################
 # PARSE RESULT
 #######################################
@@ -55,7 +55,8 @@ class Resultado:
 
     def registrar(self, res):
         if isinstance(res, Resultado):
-            if res.error: self.error = res.error
+            if res.error: 
+                self.error = res.error
             return res.nodo
         return res
 
@@ -97,7 +98,6 @@ class analizadorSintactico:
     def factor(self):
         res = Resultado()
         tok = self.tok_actual
-
         if tok.tipo in (TOK_SUM, TOK_RESTA): ## si es suma o resta entonces lo clasifica como op unary
             res.registrar(self.avanzar())
             factor = res.registrar(self.factor())
@@ -106,6 +106,7 @@ class analizadorSintactico:
         
         elif tok.tipo == TOK_ENT: #Lo clasifica como Numero
             res.registrar(self.avanzar())
+            print(self.tok_actual)
             return res.exito(Numero(tok))
 
         elif tok.tipo == TOK_PARENIZQ: # Si es un parentesis izq, manda a buscar el derecho y si lo encuentra lo clasifica como expresion
@@ -118,7 +119,7 @@ class analizadorSintactico:
             else:
                 return res.fallo(Error(
                     self.tok_actual.pos_start, self.tok_actual.pos_end,self.tok_actual.tipo,
-                    "Reporte de Error"
+                   self.tok_actual
                 ))
 
         return res.fallo(Error(
@@ -138,7 +139,6 @@ class analizadorSintactico:
         res = Resultado()
         izq = res.registrar(func())
         if res.error: return res
-
         while self.tok_actual.tipo in ops:
             op_tok = self.tok_actual
             res.registrar(self.avanzar())
@@ -166,7 +166,6 @@ class Error:
     
     def as_string(self):
         resultado = 'La línea {}, Con error sintáctico, cercano al toquen {}'.format(NUM_LINEA, self.error_nombre)
-        return resultado
 
 #######################################
 # La clase Posición se encarga de llevar
@@ -227,10 +226,10 @@ TOK_CORIZQ = 'corcheteizq'
 TOK_CORDER= 'corcheteder'
 TOK_CADENA = 'cadena'
 TOK_EOF         = 'EOF'
-TOK_MUL = 'OPERADOR'
-TOK_DIV = 'OPERADOR'
-TOK_SUM = 'OPERADOR'
-TOK_RESTA = 'OPERADOR'
+TOK_MUL = 'OPERADOR MULTIPLICACION'
+TOK_DIV = 'OPERADOR DIVISION'
+TOK_SUM = 'OPERADOR SUMA'
+TOK_RESTA = 'OPERADOR RESTA'
 TOK_ASIG =     'ASIGNACION'
 
 tipos = ['ent','ent[]','Cadena[]','Cadena',
@@ -299,6 +298,7 @@ class Token:
             
         if pos_end:
             self.pos_end = pos_end.copiar()
+         
     
     def __repr__(self):
         if self.valor: return ('{} , {}'.format(self.tipo, self.valor))
@@ -341,16 +341,19 @@ class analizadorLexico:
            elif self.current_char in LETRAS:
                 tokens = self.crear_identificador(tokens)
            elif self.current_char == '+':
-                tokens.append(Token(TOK_SUM,self.current_char))
+                tokens.append(Token(TOK_SUM,pos_start=self.pos))
                 self.avanzar()
            elif self.current_char == '-':
-                tokens.append(Token(TOK_RESTA,self.current_char))
+                tokens.append(Token(TOK_RESTA,pos_start=self.pos))
                 self.avanzar()
            elif self.current_char == '/':
-                tokens.append(Token(DIV,self.current_char))
+                tokens.append(Token(TOK_DIV,pos_start=self.pos))
+                self.avanzar()
+           elif self.current_char == '=':
+                tokens.append(self.crear_operador())
                 self.avanzar()
            elif self.current_char == '*':
-                tokens.append(Token(TOK_MUL,self.current_char))
+                tokens.append(Token(TOK_MUL,pos_start=self.pos))
                 self.avanzar()
            elif self.current_char in operadores:
                 tokens.append(self.crear_operador())
@@ -443,7 +446,7 @@ class analizadorLexico:
         num_str = ''
         dot_count = 0
         bandera = False
-
+        pos_start = self.pos.copiar()
         while bandera == False:
             if(self.current_char != None and self.current_char in LETRAS_DIGITOS + '.'):
                 if self.current_char == '.':
@@ -463,7 +466,7 @@ class analizadorLexico:
 
         try:
             if dot_count == 0:
-                return Token(TOK_ENT, int(num_str))
+                return Token(TOK_ENT, int(num_str),pos_start, self.pos)
 
         except ValueError:
             mensaje = Error(inicio, self.pos, "Reporte de Error", "'" + num_str + "'")
@@ -497,11 +500,11 @@ class analizadorLexico:
                     comentario += self.current_char
                     self.avanzar()
 
-            return Token(TOK_COMENT, comentario)
+            return Token(TOK_COMENT, comentario, posInicio, self.pos)
 
         else:
 
-            return Token(TOK_OPERADOR, comentario)
+            return Token(TOK_OPERADOR, comentario, posInicio, self.pos)
 
 
     #########################################################################
@@ -512,13 +515,14 @@ class analizadorLexico:
 
         cadena = self.current_char
         self.avanzar()
+        pos_start = self.pos.copiar()
 
         while self.current_char != '"':
             cadena += self.current_char
             self.avanzar()
 
 
-        return Token(TOK_CADENA, cadena)
+        return Token(TOK_CADENA, cadena,pos_start, self.pos)
 
 
     
@@ -531,6 +535,7 @@ class analizadorLexico:
         inicio = self.current_char
         operador = ''
         bandera = False
+        pos_start = self.pos.copiar()
 
         while bandera == False:
             if(self.current_char != None and self.current_char in operadores):
@@ -541,10 +546,10 @@ class analizadorLexico:
             else:
                 bandera = True
 
-        if operador == '=':
-            return Token(TOK_ASIGNACION, operador)
+        if inicio == '=':
+            return Token(TOK_ASIGNACION, inicio, pos_start,self.pos)
         else:
-            return Token(TOK_OPERADOR, operador)
+            return Token(TOK_OPERADOR, operador,pos_start,self.pos)
 
             
 
