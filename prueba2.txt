@@ -1,11 +1,12 @@
-ent fibonacci(ent n)
+﻿ent fibonacci(ent n)
 {
     si (n>1){
        retornar fibonacci(n-1) + fibonacci(n-2);
     }
     sino (n==1) {  // caso base
         retornar 1;
-    }
+    } 
+    
     sino (n==0){ 
         retornar 0;
     }

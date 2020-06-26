@@ -1,15 +1,1 @@
-clase Factorial {
-	publico estatico vacio principal(Cadena[] a) {
-		imprimir(nuevo Fac().HacerFac(10));
-	}
-}
-clase Fac {
-	publico ent HacerFac(ent num) {
-		ent num_aux;
-		si (num < 1)
-			num_aux = 1;
-		entonces:
-			num_aux = num * (esto.HacerFac(num-1));
-			retornar num_aux;
-	}
-
+ent j = tfr

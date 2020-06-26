@@ -6,7 +6,7 @@
 import string
 import os
 import math
-
+from string_with_arrows import *
 # Conjuntos de valores numericos y caracteres.
 # Serán utilizados para la generación de tokens.
 
@@ -14,6 +14,30 @@ DIGITOS = '0123456789'
 LETRAS = string.ascii_letters
 LETRAS_DIGITOS = LETRAS + DIGITOS
 NUM_LINEA = 0 # Linea de código en lectura.
+
+
+#######################################
+# Clase encargada del manejo de errores.
+# Solamente es capaz de identificar la linea
+# y el token que posee el fallo.
+#######################################
+
+    
+class Error:
+    def __init__(self, pos_inicio, pos_fin, error_nombre, detalles):
+        self.pos_inicio = pos_inicio
+        self.pos_fin = pos_fin
+        self.error_nombre = error_nombre
+        self.detalles = detalles
+    
+    def as_string(self):
+        resultado = 'La línea {}, Con error sintáctico, cercano al toquen {}'.format(NUM_LINEA, self.error_nombre)
+        return resultado
+
+class InvalidSyntaxError(Error):
+    def __init__(self, pos_start, pos_end, details=''):
+        super().__init__(pos_start, pos_end, 'Invalid Syntax', details)
+
 
 #######################################
 # NODES
@@ -37,6 +61,21 @@ class OpBinaria:
     def __repr__(self):
         return self.nodo_izq, self.op, self.nodo_der
 
+class AccesarVarNodo:
+    def __init__(self, var_nombre_tok):
+        self.var_nombre_tok = var_nombre_tok
+
+        self.pos_start = self.var_nombre_tok.pos_start
+        self.pos_end = self.valor_node.pos_end
+
+class AsignarVarNodo:
+    def __init__(self, var_nombre_tok, valor_node):
+        self.var_nombre_tok = var_nombre_tok
+        self.valor_node = valor_node
+
+        self.pos_start = self.var_nombre_tok.pos_start
+        self.pos_end = self.valor_node.pos_end
+
 class OpUn:
     def __init__(self, op, nodo):
         self.op = op
@@ -52,6 +91,10 @@ class Resultado:
     def __init__(self):
         self.error = None
         self.nodo = None
+        self.avanzar_cont = 0
+
+    def registro_avanzado(self):
+        self.avanzar_cont += 1
 
     def registrar(self, res):
         if isinstance(res, Resultado):
@@ -94,7 +137,39 @@ class analizadorSintactico:
         return res
 
     ###################################
+    def atom(self):
+        res = Resultado()
+        tok = self.tok_actual
 
+        if tok.tipo == TOK_TIPO:
+            res.registro_avanzado()
+            self.avanzar()
+            return res.exito(Numero(tok))
+
+        elif tok.tipo == TOK_IDENTIFICADOR:
+            res.registro_avanzado()
+            self.avanzar()
+            return res.exito(AccesarVarNodo(tok))
+
+        elif tok.type == TOK_PARENIZQ:
+            res.registro_avanzado()
+            self.avanzar()
+            expr = res.registrar(self.expr())
+            if res.error: return res
+            if self.tok_actual.tipo == TOK_PARENDER:
+                res.registro_avanzado()
+                self.avanzar()
+                return res.exito(expr)
+            else:
+                return res.falla(InvalidSyntaxError(self.tok_actual.pos_start, self.tok_actual.pos_end,"Se esperaba un ')'"))
+
+            return res.falla(InvalidSyntaxError(tok.pos_start, tok.pos_end,"Se esperaba un int, float, identifier, '+', '-' o '('"))
+
+
+    def power(self):
+        return self.bin_op(self.atom, (TOK_POT, ), self.factor)
+
+    
     def factor(self):
         res = Resultado()
         tok = self.tok_actual
@@ -104,33 +179,32 @@ class analizadorSintactico:
             if res.error: return res
             return res.exito(OpUn(tok, factor))
         
-        elif tok.tipo == TOK_ENT: #Lo clasifica como Numero
-            res.registrar(self.avanzar())
-            print(self.tok_actual)
-            return res.exito(Numero(tok))
-
-        elif tok.tipo == TOK_PARENIZQ: # Si es un parentesis izq, manda a buscar el derecho y si lo encuentra lo clasifica como expresion
-            res.registrar(self.avanzar())
-            expr = res.registrar(self.expr())
-            if res.error: return res
-            if self.tok_actual.tipo == TOK_PARENDER: # En caso que no encuentre el parentesis derecho para cerrar la expresion, tira error 
-                res.registrar(self.avanzar())
-                return res.exito(expr)
-            else:
-                return res.fallo(Error(
-                    self.tok_actual.pos_start, self.tok_actual.pos_end,self.tok_actual.tipo,
-                   self.tok_actual
-                ))
-
-        return res.fallo(Error(
-            tok.pos_start, tok.pos_end,
-            self.tok_actual.tipo, "Reporte de Error"
-        ))
-
+        return self.power()
+    
     def term(self): #Clasificar como termino 
         return self.bin_op(self.factor, (TOK_MUL, TOK_DIV))
 
     def expr(self): #Clasificar como expresion
+        res = Resultado()
+
+        if (self.tok_actual.iguales(TOK_TIPO,'ent')) or (self.tok_actual.iguales(TOK_TIPO,'ent[]')) or (self.tok_actual.iguales(TOK_TIPO,'Cadena[]')) or (self.tok_actual.iguales(TOK_TIPO,'Cadena')) or (self.tok_actual.iguales(TOK_TIPO,'bool')):
+            res.registrar(self.avanzar())
+
+        if self.tok_actual.tipo != TOK_IDENTIFICADOR:
+            return res.fallo(InvalidSyntaxError(self.tok_actual.pos_start, self.tok_actual.pos_end,"Se esperaba un identificador"))
+
+        nombre_var = self.tok_actual
+        res.registrar(self.avanzar())
+
+        if self.tok_actual.tipo != TOK_ASIG:
+            return res.fallo(InvalidSyntaxError(self.tok_actual.pos_start, self.tok_actual.pos_end,"Se esperaba un '='"))
+
+        res.registrar(self.avanzar())
+        expr = res.registrar(self.expr())
+        if res.error: return res
+        return res.exito(AsignarVarNodo(nombre_var,expr))
+
+        
         return self.bin_op(self.term, (TOK_SUM, TOK_RESTA))
 
     ###################################
@@ -149,23 +223,7 @@ class analizadorSintactico:
         return res.exito(izq)
 
     
-    
-#######################################
-# Clase encargada del manejo de errores.
-# Solamente es capaz de identificar la linea
-# y el token que posee el fallo.
-#######################################
 
-    
-class Error:
-    def __init__(self, pos_inicio, pos_fin, error_nombre, detalles):
-        self.pos_inicio = pos_inicio
-        self.pos_fin = pos_fin
-        self.error_nombre = error_nombre
-        self.detalles = detalles
-    
-    def as_string(self):
-        resultado = 'La línea {}, Con error sintáctico, cercano al toquen {}'.format(NUM_LINEA, self.error_nombre)
 
 #######################################
 # La clase Posición se encarga de llevar
@@ -231,6 +289,7 @@ TOK_DIV = 'OPERADOR DIVISION'
 TOK_SUM = 'OPERADOR SUMA'
 TOK_RESTA = 'OPERADOR RESTA'
 TOK_ASIG =     'ASIGNACION'
+TOK_POT = 'Potencia'
 
 tipos = ['ent','ent[]','Cadena[]','Cadena',
     'bool','largo','vacio']
@@ -298,6 +357,9 @@ class Token:
             
         if pos_end:
             self.pos_end = pos_end.copiar()
+
+    def iguales(self, tipo_, valor):
+        return self.tipo == tipo_ and self.valor == valor
          
     
     def __repr__(self):
@@ -348,6 +410,10 @@ class analizadorLexico:
                 self.avanzar()
            elif self.current_char == '/':
                 tokens.append(Token(TOK_DIV,pos_start=self.pos))
+                self.avanzar()
+
+           elif self.current_char == '^':
+                tokens.append(Token(TOK_POT, pos_start=self.pos))
                 self.avanzar()
            elif self.current_char == '=':
                 tokens.append(self.crear_operador())
