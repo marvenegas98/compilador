@@ -50,8 +50,8 @@ class SiCondicion:
 		self.casos = casos
 		self.entonces = entonces
 
-		self.pos_inicio = self.casos[0][0].pos_inicio
-		self.pos_final = (self.entonces or self.casos[len(self.casos) - 1][0]).pos_final
+		#self.pos_inicio = self.casos[0][0].pos_inicio
+		#self.pos_final = (self.entonces or self.casos[len(self.casos) - 1][0]).pos_final
         
 
                  
@@ -60,13 +60,14 @@ class SiCondicion:
 #######################################
 
 class Resultado:
+    contador_avance = 0
     def __init__(self):
         self.error = None
         self.nodo = None
         contador_avance = 0
 
-   def registrar_avance(self):
-		self.contador_avance += 1 
+    def registrar_avance(self):
+        self.contador_avance += 1 
 
     def registrar(self, res):
         if isinstance(res, Resultado):
@@ -111,44 +112,41 @@ class analizadorSintactico:
     ###################################
 
     def si_expr(self):
-		res = Resultado()
-		casos = []
-		entonces = None
+        res = Resultado()
+        casos = []
+        entonces = None
 
-		if not self.tok_actual.matches(TOK_RESERVADA, 'si'):
-			return res.fallo(InvalidSyntaxError(
-				self.tok_actual.pos_inicio, self.tok_actual.pos_final,
-				f"Expected 'IF'"
-			))
+        if not self.tok_actual.coincidir(TOK_RESERVADA, 'si'):
+            return res.fallo(Error(
+                self.tok_actual.pos_start, self.tok_actual.pos_end,self.tok_actual.tipo,
+                "Reporte de Error"))
 
-		res.registrar_avance()
-		self.avanzar()
+        res.registrar_avance()
+        self.avanzar()
 
-		condicion = res.registrar(self.expr())
-		if res.error: return res
+        condicion = res.registrar(self.expr())
+        if res.error: return res
 
-		if not self.tok_actual.matches(TOK_RESERVADA, 'entonces'):
-			return res.fallo(InvalidSyntaxError(
-				self.tok_actual.pos_inicio, self.tok_actual.pos_final,
-				f"Expected 'THEN'"
-			))
+        if not self.tok_actual.coincidir(TOK_RESERVADA, 'entonces'):
+            return res.fallo(Error(
+                self.tok_actual.pos_start, self.tok_actual.pos_end,self.tok_actual.tipo,
+                "Reporte de Error"))
 
-		res.registrar_avance()
-		self.avanzar()
+        res.registrar_avance()
+        self.avanzar()
 
-		expr = res.registrar(self.expr())
-		if res.error: return res
-		casos.append((condicion, expr))
+        expr = res.registrar(self.expr())
+        if res.error: return res
+        casos.append((condicion, expr))
 
+        if self.tok_actual.coincidir(TOK_RESERVADA, 'entonces'):
+            res.registrar_avance()
+            self.avanzar()
 
-		if self.tok_actual.matches(TOK_RESERVADA, 'entonces'):
-			res.registrar_avance()
-			self.avanzar()
+            entonces = res.registrar(self.expr())
+            if res.error: return res
 
-			entonces = res.registrar(self.expr())
-			if res.error: return res
-
-		return res.exito(SiCondicion(casos, entonces))
+        return res.exito(SiCondicion(casos, entonces))
 
     ######################################################
 
@@ -178,8 +176,8 @@ class analizadorSintactico:
                     self.tok_actual.pos_start, self.tok_actual.pos_end,self.tok_actual.tipo,
                    self.tok_actual
                 ))
-    
-	elif tok.matches(TOK_RESERVADA, 'si'):
+
+        elif tok.coincidir(TOK_RESERVADA, 'si'):
             si_expr = res.registrar(self.si_expr())
             if res.error: return res
             return res.exito(si_expr)
@@ -362,6 +360,9 @@ class Token:
             
         if pos_end:
             self.pos_end = pos_end.copiar()
+
+    def coincidir(self, tipo_, valor):
+        return self.tipo == tipo_ and self.valor == valor
          
     
     def __repr__(self):
