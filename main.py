@@ -44,6 +44,17 @@ class OpUn:
 
     def __repr__(self):
         return self.op, self.nodo
+
+class SiCondicion:
+	def __init__(self, casos, entonces):
+		self.casos = casos
+		self.entonces = entonces
+
+		self.pos_inicio = self.casos[0][0].pos_inicio
+		self.pos_final = (self.entonces or self.casos[len(self.casos) - 1][0]).pos_final
+        
+
+                 
 #######################################
 # PARSE RESULT
 #######################################
@@ -52,6 +63,10 @@ class Resultado:
     def __init__(self):
         self.error = None
         self.nodo = None
+        contador_avance = 0
+
+   def registrar_avance(self):
+		self.contador_avance += 1 
 
     def registrar(self, res):
         if isinstance(res, Resultado):
@@ -95,6 +110,48 @@ class analizadorSintactico:
 
     ###################################
 
+    def si_expr(self):
+		res = Resultado()
+		casos = []
+		entonces = None
+
+		if not self.tok_actual.matches(TOK_RESERVADA, 'si'):
+			return res.fallo(InvalidSyntaxError(
+				self.tok_actual.pos_inicio, self.tok_actual.pos_final,
+				f"Expected 'IF'"
+			))
+
+		res.registrar_avance()
+		self.avanzar()
+
+		condicion = res.registrar(self.expr())
+		if res.error: return res
+
+		if not self.tok_actual.matches(TOK_RESERVADA, 'entonces'):
+			return res.fallo(InvalidSyntaxError(
+				self.tok_actual.pos_inicio, self.tok_actual.pos_final,
+				f"Expected 'THEN'"
+			))
+
+		res.registrar_avance()
+		self.avanzar()
+
+		expr = res.registrar(self.expr())
+		if res.error: return res
+		casos.append((condicion, expr))
+
+
+		if self.tok_actual.matches(TOK_RESERVADA, 'entonces'):
+			res.registrar_avance()
+			self.avanzar()
+
+			entonces = res.registrar(self.expr())
+			if res.error: return res
+
+		return res.exito(SiCondicion(casos, entonces))
+
+    ######################################################
+
     def factor(self):
         res = Resultado()
         tok = self.tok_actual
@@ -121,6 +178,11 @@ class analizadorSintactico:
                     self.tok_actual.pos_start, self.tok_actual.pos_end,self.tok_actual.tipo,
                    self.tok_actual
                 ))
+    
+	elif tok.matches(TOK_RESERVADA, 'si'):
+            si_expr = res.registrar(self.si_expr())
+            if res.error: return res
+            return res.exito(si_expr)
 
         return res.fallo(Error(
             tok.pos_start, tok.pos_end,
@@ -147,6 +209,8 @@ class analizadorSintactico:
             izq = OpBinaria(izq, op_tok, der)
 
         return res.exito(izq)
+
+   
 
     
     
