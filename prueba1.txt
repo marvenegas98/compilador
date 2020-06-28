@@ -1,1 +1,12 @@
-ent j = tfr
+2^5
+2+7*3
+6*9+1
+si a == 22 a
+10/2
+a + 2
+ent i = 1
+ent b = i+5
+ent i =0
+mientras i < 1000 entonces ent i = i + 1
+ent a = 4
+si a == 4 2*5 entonces 4*2
